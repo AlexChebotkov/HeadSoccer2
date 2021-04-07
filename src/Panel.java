@@ -7,10 +7,8 @@ public class Panel extends JPanel implements ActionListener {
     private final GameLogic gameLogic;
 
     public Panel(GameLogic gameLogic, int fps) {
-        this.gameLogic = gameLogic;
-        addKeyListener(new KeyListener(gameLogic));
-        setFocusable(true);
-        Timer timer = new Timer(1000 / fps, this);
+        this.gameLogic = gameLogic;//панель в себе запоминает всю логику игры откуда ей нужно будет вытащить коорды шаров и игроков
+        Timer timer = new Timer(1000 / fps, this);//создает таймер который раз  в секнуду вызывает метод actionPerformed
         timer.start();
     }
 
@@ -19,9 +17,9 @@ public class Panel extends JPanel implements ActionListener {
 
         this.setBackground(Color.BLACK);
 
-        Graphics2D g = (Graphics2D) graphics;
+        Graphics2D g = (Graphics2D) graphics;//вызывает gameLogic.update и отрисовывает все что нужно
 
-        gameLogic.update();
+        gameLogic.update();//GameLogic
 
         drawField(g);
         drawPlayer(g);
@@ -39,9 +37,9 @@ public class Panel extends JPanel implements ActionListener {
     private void drawPlayer(Graphics2D g) {
         g.setColor(Color.RED);
         for (Rectangle rect : gameLogic.getPlayerRects())
-            g.fillRect(rect.x, rect.y, rect.width, rect.height + 4);//TODO: remove constants
+            g.fillRect(rect.x, rect.y, rect.width, rect.height);
         for (Rectangle rect : gameLogic.getPlayerCircles())
-            g.fillOval(rect.x, rect.y, rect.width , rect.height);
+             g.fillOval(rect.x, rect.y, rect.width, rect.height);
     }
 
     private void drawField(Graphics2D g) {
@@ -51,7 +49,7 @@ public class Panel extends JPanel implements ActionListener {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e) { //заново рисует paintComponent
         repaint();
     }
 }
