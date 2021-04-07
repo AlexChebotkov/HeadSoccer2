@@ -1,4 +1,6 @@
+
 import java.awt.*;
+import static java.lang.Math.min;
 
 public class Player {
 
@@ -7,45 +9,66 @@ public class Player {
     private int headR = 80, moveBlock = 0;
     private Vector speed = new Vector(0, 0);
     private final Point size;
-    private final boolean isLeft;
-    private boolean isOnFloor = false ;
+    private boolean isOnFloor = false, isOnBall = false;
+    private final double g;
 
-    public Player(Field field, Point size, boolean isLeft) {
-        this.isLeft = isLeft;
+    public Player(Field field, Point size, boolean isLeft, double g) {
         this.size = size;
-        prevPos = pos = new Vector(field.getPlayerStartPos(this.isLeft));
+        this.g = g;
+        prevPos = pos = new Vector(field.getPlayerStartPos(isLeft));
     }
 
     public Rectangle getRect() {
         return new Rectangle((int) pos.x, (int) pos.y, size.x, size.y);
     }
-    public Rectangle[] getCircles() {
-        return  new Rectangle[]{new Rectangle((int) (pos.x + headPos.x), (int) (pos.y + headPos.y), headR, headR)};
+    public Rectangle getCircle() {
+        return new Rectangle((int) (pos.x + headPos.x), (int) (pos.y + headPos.y), headR, headR);
     }
 
+//    public boolean isIn(Rectangle ball)
+//    {
+//        Vector ballCenter = new Vector(ball.x + ball.width / 2.0, ball.y + ball.height / 2.0);
+//        Point headCenter = new Point((int) (pos.x + headPos.x) + headR / 2, (int) (pos.y + headPos.y) + headR / 2);
+//        if (Physics.distance(ballCenter.getPoint(), headCenter) < headR / 2.0)
+//            return true;
+//        return ballCenter.isIn(getRect());
+//    }
+
     public void CollisionProcessing(Rectangle rect) {
-        Vector n = Physics.CheckCollision(getRect(), rect);
-        if (!n.is_zeros()) {//TODO
-            if (n.y != 0) {
-                speed.y = 0;
-                pos.y = prevPos.y;
-                isOnFloor = true;
-            } else {
-                speed.x = 0;
-                pos.x = prevPos.x;
-            }
+        if (pos.x < rect.x || pos.x + size.x > rect.x + rect.width) {
+            pos.x = prevPos.x;
+            speed.x = 0;
+        }
+        if (pos.y < rect.y || pos.y + size.y + headR > rect.y + rect.height) {
+            pos.y = prevPos.y;
+            speed.y = 0;
+            isOnFloor = true;
         }
     }
 
-    public void move(double g) {
+    public boolean onBall(Rectangle ball)
+    {
+        isOnBall = false;
+        if (ball.y < 830) //TODO: magic numbers
+            return false;
+        if (ball.x + 6 > pos.x && ball.x + ball.width < pos.x + size.x + 8 && ball.x < pos.y + size.y) { //TODO: magic numbers
+            if (ball.y  - 12 < pos.y + size.y) {//TODO: magic numbers
+                isOnBall = true;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void move(double dt) {
         prevPos = new Vector(pos);
-        if (!isOnFloor)
-            speed.y += g;
+        if (!isOnFloor && !isOnBall)
+            speed.y += g * dt;
         if (moveBlock * speed.x > 0)
             speed.x = 0;
-        pos.add(speed);
-        double airLoss = 0.004;
-        speed.mul(1 - airLoss);
+        if (isOnBall)
+            speed.y = min(0, speed.y);
+        pos.add(new Vector(speed.x * dt, speed.y * dt));
     }
 
     public Vector getSpeed() {
@@ -56,15 +79,14 @@ public class Player {
         moveBlock = block;
     }
 
-    public void setXSpeed(double a) {
-        speed = new Vector(a, speed.y);
+    public void setXSpeed(double speedX) {
+        speed.x = speedX;
     }
 
     public void jump() {
-        if (isOnFloor) {
+        if (isOnFloor || isOnBall) {
             isOnFloor = false;
-            pos.y += -10;
-            speed.y += -9;//TODO: remove constant
+            speed.y -= 9;//TODO: remove constant
         }
     }
 }

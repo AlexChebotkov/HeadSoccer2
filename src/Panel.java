@@ -5,13 +5,16 @@ import java.awt.event.*;
 public class Panel extends JPanel implements ActionListener {
 
     private final GameLogic gameLogic;
+    int counts = 0; //TODO
+    private long lt;
 
     public Panel(GameLogic gameLogic, int fps) {
         this.gameLogic = gameLogic;
         addKeyListener(new KeyListener(gameLogic));
         setFocusable(true);
-        Timer timer = new Timer(1000 / fps, this);
+        Timer timer = new Timer(1000 / (fps * gameLogic.getCountsPerFrame()), this);
         timer.start();
+        lt = System.nanoTime();
     }
 
     public void paintComponent(Graphics graphics) {
@@ -20,8 +23,6 @@ public class Panel extends JPanel implements ActionListener {
         this.setBackground(Color.BLACK);
 
         Graphics2D g = (Graphics2D) graphics;
-
-        gameLogic.update();
 
         drawField(g);
         drawPlayer(g);
@@ -32,8 +33,8 @@ public class Panel extends JPanel implements ActionListener {
         g.setColor(Color.CYAN);
         Point ballPos = gameLogic.getBallPos();
         int delta = (int) Physics.eps;
-        int r = gameLogic.getBallRadius() + 2 * delta;
-        g.fillOval(ballPos.x - delta, ballPos.y - delta, r, r);
+        int r = gameLogic.getBallRadius() + 4 * delta;
+        g.fillOval(ballPos.x - 2 * delta, ballPos.y - 2 * delta, r, r);
     }
 
     private void drawPlayer(Graphics2D g) {
@@ -52,6 +53,13 @@ public class Panel extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        repaint();
+        long ct = System.nanoTime();
+        gameLogic.update((ct - lt) / 1e7);
+        lt = ct;
+        counts++;
+        if (counts == gameLogic.getCountsPerFrame()) {
+            counts = 0;
+            repaint();
+        }
     }
 }

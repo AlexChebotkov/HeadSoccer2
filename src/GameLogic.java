@@ -2,21 +2,24 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import static java.lang.Math.max;
-
 public class GameLogic {
 
     private final Ball ball;
     private final Player[] players;
     private final Field field;
+    private final int countsPerFrame;
 
-    private final double g;
-
-    public GameLogic(Ball ball, Player[] players, Field field, double g) {
+    public GameLogic(Ball ball, Player[] players, Field field, int countsPerFrame) {
         this.ball = ball;
         this.players = players;
         this.field = field;
-        this.g = g;
+        this.countsPerFrame = countsPerFrame;
+    }
+
+    public void ballReset()
+    {
+        ball.setPos(field.getBallStartPos());
+        ball.setSpeed(new Vector(0, 0));
     }
 
     public Point getBallPos() {
@@ -36,32 +39,29 @@ public class GameLogic {
     }
 
     public Rectangle[] getPlayerCircles() {
-        return Stream.concat(Arrays.stream(players[0].getCircles()), Arrays.stream(players[1].getCircles())).toArray(Rectangle[]::new);
+        return new Rectangle[] { players[0].getCircle(), players[1].getCircle() };
     }
 
 
-    public void update() {
+    public void update(double dt) {
+        boolean ballBetween = ball.betweenPlayers(players[0].getRect(), players[1].getRect());
         for (Rectangle rect : getBorderRects())
-            ball.CollisionProcessing(rect, false);
-        for (Rectangle rect : getPlayerRects())
-            ball.CollisionProcessing(rect, false);
+            ball.CollisionProcessing(rect, new Vector(0, 0), false);
         for (Player player : players) {
-            for (Rectangle rect : getBorderRects())
-                player.CollisionProcessing(rect);
-            for (Player otherPlayer : players)
-                if (otherPlayer != player)
-                    player.CollisionProcessing(otherPlayer.getRect());
-            if (players[0].getRect().x + players[0].getRect().width >= players[1].getRect().x)
+            player.CollisionProcessing(new Rectangle(50, 50, 1100, 925)); //TODO: magic numbers
+            if (ballBetween || (players[0].getRect().x + players[0].getRect().width >= players[1].getRect().x))
                 player.setMoveBlock(player == players[0] ? 1 : -1);
             else
                 player.setMoveBlock(0);
-            player.move(g);
+            boolean isOnBall = player.onBall(ball.getRect());
+            player.move(dt);
+            ball.CollisionProcessing(player.getRect(), player.getSpeed(), false);
+            ball.CollisionProcessing(player.getCircle(), player.getSpeed(), true);
+            if (isOnBall)
+                ball.setSpeed(new Vector(0, 0));
         }
-        ball.temp = players[0].getSpeed();
-        for (Rectangle rect : getPlayerCircles())
-            ball.CollisionProcessing(rect, true);
-        ball.temp = new Vector(0, 0);
-        ball.move(g);
+
+        ball.move(dt);
     }
 
     public void movePlayer(int player, double a, boolean jump) {
@@ -71,4 +71,7 @@ public class GameLogic {
             players[player].jump();
     }
 
+    public int getCountsPerFrame() {
+        return countsPerFrame;
+    }
 }
