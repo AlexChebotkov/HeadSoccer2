@@ -1,4 +1,3 @@
-
 import java.awt.*;
 import static java.lang.Math.min;
 
@@ -81,6 +80,18 @@ public class Player {
 
     public void setXSpeed(double speedX) {
         speed.x = speedX;
+    }
+
+    public void setSpeed(Vector speed) {
+        this.speed = speed;
+    }
+
+    public void setOnFloor(boolean onFloor) {
+        isOnFloor = onFloor;
+    }
+
+    public void setPos(Point pos) {
+        this.pos = new Vector(pos);
     }
 
     public void jump() {

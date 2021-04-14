@@ -2,15 +2,14 @@ import java.awt.*;
 
 public class Field {
 
-    private final Point ballStartPos = new Point(960, 300);
+    private final Point ballStartPos = new Point(600, 400);
     private final Point leftPlayerStartPos = new Point(150, 700);
-    private final Point rightPlayerStartPos = new Point(1770, 700);
+    private final Point rightPlayerStartPos = new Point(1000, 700);
 
-    private final Rectangle bottomBorderRect = new Rectangle(0, 900, 1920, 100);
-    private final Rectangle leftBorderRect = new Rectangle(0, 0, 50, 1000);
-    private final Rectangle rightBorderRect = new Rectangle(1870, 0, 60, 1000);
-    private final Rectangle topBorderRect = new Rectangle(0, 0, 1920, 60);
-    private final Rectangle rightgates = new Rectangle(0, 0, 200, 550);
+    private final Rectangle bottomBorderRect = new Rectangle(0, 900, 1200, 100);
+    private final Rectangle leftBorderRect = new Rectangle(0, 0, 50, 500);
+    private final Rectangle rightBorderRect = new Rectangle(1150, 0, 100, 500);
+    private final Rectangle topBorderRect = new Rectangle(0, 0, 1200, 50);
 
     public Rectangle[] getAllRectColliders() {
         return new Rectangle[]{leftBorderRect, rightBorderRect, bottomBorderRect, topBorderRect};

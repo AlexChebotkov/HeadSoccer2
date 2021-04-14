@@ -1,6 +1,4 @@
 import java.awt.*;
-import java.util.Arrays;
-import java.util.stream.Stream;
 
 public class GameLogic {
 
@@ -8,6 +6,9 @@ public class GameLogic {
     private final Player[] players;
     private final Field field;
     private final int countsPerFrame;
+    private boolean wait = true;
+    private double waitTime = 150, curWaitTime = 0;
+    private int lScore = 0, rScore = 0;
 
     public GameLogic(Ball ball, Player[] players, Field field, int countsPerFrame) {
         this.ball = ball;
@@ -19,7 +20,17 @@ public class GameLogic {
     public void ballReset()
     {
         ball.setPos(field.getBallStartPos());
-        ball.setSpeed(new Vector(0, 0));
+        ball.setSpeed(new Vector(0, -3));
+    }
+
+    public void playersReset()
+    {
+        for (Player player : players)
+        {
+            player.setSpeed(new Vector(0, 0));
+            player.setOnFloor(false);
+            player.setPos(field.getPlayerStartPos(player == players[0]));
+        }
     }
 
     public Point getBallPos() {
@@ -48,7 +59,7 @@ public class GameLogic {
         for (Rectangle rect : getBorderRects())
             ball.CollisionProcessing(rect, new Vector(0, 0), false);
         for (Player player : players) {
-            player.CollisionProcessing(new Rectangle(50, 50, 1100, 925)); //TODO: magic numbers
+            player.CollisionProcessing(new Rectangle(20, 50, 1160, 925)); //TODO: magic numbers
             if (ballBetween || (players[0].getRect().x + players[0].getRect().width >= players[1].getRect().x))
                 player.setMoveBlock(player == players[0] ? 1 : -1);
             else
@@ -61,7 +72,33 @@ public class GameLogic {
                 ball.setSpeed(new Vector(0, 0));
         }
 
-        ball.move(dt);
+        if (wait)
+            curWaitTime += dt;
+        if (curWaitTime > waitTime)
+        {
+            wait = false;
+            curWaitTime = 0;
+        }
+
+        if (!wait)
+            ball.move(dt);
+
+        if (ball.getPos().x + ball.getRadius() < 10) {
+            rScore++;
+            ballReset();
+            playersReset();
+            wait = true;
+        }
+        if (ball.getPos().x > 1190) {
+            lScore++;
+            wait = true;
+            ballReset();
+            playersReset();
+        }
+    }
+
+    Point getScore() {
+        return new Point(lScore, rScore);
     }
 
     public void movePlayer(int player, double a, boolean jump) {

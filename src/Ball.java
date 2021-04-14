@@ -6,7 +6,7 @@ public class Ball {
 
     private Vector pos;
     private final int radius;
-    private Vector speed = new Vector(0, 0);
+    private Vector speed = new Vector(0, -3);
     private final double g;
 
     public Ball(Field field, int radius, double g) {
@@ -59,7 +59,17 @@ public class Ball {
         {
             pos.y = 53;
             speed.y *= -0.97;
-        } //TODO: all borders same
+        }
+        if (pos.x < 62 && pos.y + radius + 5 < 500)
+        {
+            pos.x = 62;
+            speed.x *= -0.97;
+        }
+        if (pos.x > 1200 - 112 && pos.y + radius + 5 < 500)
+        {
+            pos.x = 1200 - 112;
+            speed.x *= -0.97;
+        }
         double airLoss = 1e-3 * dt;
         speed.mul(1 - airLoss);
         double maxSpeed = 20;

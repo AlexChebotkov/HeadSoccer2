@@ -11,8 +11,6 @@ public class Game {
     private final GameLogic gameLogic = new GameLogic(ball, players, field, countsPerFrame);
 
     public void run() {
-        Frame frame = new Frame(gameLogic, 1920, 1000, 60);
+        Frame frame = new Frame(gameLogic, 1200, 1000, 60);
     }
 }
-
-
